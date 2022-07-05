@@ -243,11 +243,93 @@ void show_all(std::vector<Project> &projects)
   }
 }
 
+std::string ignore_symbol(std::string str, char symbol)
+{
+  std::string result = "";
+  for(int i = 0; i < str.size(); ++i)
+  {
+    if(symbol != str[i]) {
+      result += str[i];
+    }
+  }
+  return result;
+}
+
+int display_menu(std::vector<std::string> &menu)
+{
+  for(int i = 0; i < menu.size(); ++i)
+  {
+    std::cout << i+1 << ") " << menu[i];
+  }
+}
+
+int make_choice(std::vector<std::string> &menu)
+{
+  int id_operation = 1;
+  std::cout << "Please enter the ID of the selected operation [1, 8]: ";
+  std::cin >> id_operation;
+
+  while(id_operation < 1 || id_operation > 8 || std::cin.fail()) {
+    std::cout << "Fail: Please enter an integer in [1-7] range: ";
+    std::cin.clear();
+    std::cin.ignore(256, '\n');
+    std::cin >> id_operation;
+  }
+  std::cout << "You have entered " << id_operation << ", i.e. ";
+  std::cout << menu[id_operation - 1] << std::endl;
+  return id_operation;
+}
+
+void option(int id)
+{
+  switch (id)
+  {
+    case 1:
+      std::cout << "create project\n";
+      break;
+    case 2:
+      std::cout << "add task\n";
+      break;
+    case 3:
+      std::cout << "edit project\n";
+      break;
+    case 4:
+      std::cout << "edit task";
+      break;
+    case 5:
+      std::cout << "delete project\n";
+      break;
+    case 6:
+      std::cout << "delete task";
+      break;
+    case 7:
+      std::cout << "display projects";
+      break;
+    case 8:
+      std::cout << "display all data";
+      break;
+    //default:
+    //  std::cout << "????????";
+  }
+}
+
 int run()
 {
   std::vector<Project> projects = {};
   std::string db_name = "db.txt";
   read_from_db(projects, db_name);
+  std::vector<std::string> menu = {"To create new project\n"
+                                 , "To add task\n"
+                                 , "To edit/rename project\n"
+                                 , "To edit task\n"
+                                 , "To delete project\n"
+                                 , "To delete task\n"
+                                 , "To display projects\n"
+                                 , "To display all data\n"};
+  display_menu(menu);
+  int id = make_choice(menu);
+
+  option(id);
 
   std::string project_name = "name1";
   //create project
