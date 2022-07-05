@@ -4,11 +4,15 @@
 #include<fstream>
 #include<sstream>
 
+const char delimiter = '|';
+const char space= ' ';
+const  std::string db_name = "db.txt";
+
 std::string get_project_name_from_db(std::string line)
 {
   int i = 0;
   std::string result = "";
-  while(line[i] != '|')
+  while(line[i] != delimiter)
   {
     result += line[i];
     ++i;
@@ -47,11 +51,11 @@ void create_project(std::vector<Project> &projects
     Project project(project_name);
     projects.push_back(project);
     std::cout << "Done: <" << project_name
-              << " has successfully created!\n";
+              << "> project has successfully created!\n";
     return;
   }
   std::cout << "Fail: <" << project_name
-            << "> the project has already created!\n";
+            << "> project has already created!\n";
 }
 
 void read_from_db(std::vector<Project> &projects, std::string db_name)
@@ -134,7 +138,7 @@ void display_projects(std::vector<Project> &projects)
 
 void update_db(std::vector<Project> &projects, std::string db_name)
 {
-  std::string delimiter = " | ";
+  //std::string delimiter = "|";
   std::ofstream file;
   file.open(db_name);
   for(int i = 0; i < projects.size(); ++i) {
@@ -265,58 +269,102 @@ int display_menu(std::vector<std::string> &menu)
 
 int make_choice(std::vector<std::string> &menu)
 {
-  int id_operation = 1;
+  int id = 1;
   std::cout << "Please enter the ID of the selected operation [1, 8]: ";
-  std::cin >> id_operation;
+  std::cin >> id;
 
-  while(id_operation < 1 || id_operation > 8 || std::cin.fail()) {
+  while(std::cin.fail()) {
     std::cout << "Fail: Please enter an integer in [1-7] range: ";
     std::cin.clear();
-    std::cin.ignore(256, '\n');
-    std::cin >> id_operation;
+    std::cin.ignore();
+    std::cin >> id;
   }
-  std::cout << "You have entered " << id_operation << ", i.e. ";
-  std::cout << menu[id_operation - 1] << std::endl;
-  return id_operation;
+  std::cout << "You have entered " << id << ", i.e. ";
+  std::cout << menu[id - 1] << std::endl;
+  return id;
 }
 
-void option(int id)
+
+
+std::string input()
 {
-  switch (id)
+  std::string input = "";
+  std::cout << "Please enter ('|' and spaces will be ignored): ";
+  std::getline(std::cin >> std::ws, input);
+  //getline(std::cin, input);
+  input = ignore_symbol(ignore_symbol(input, delimiter), space);
+  while(std::cin.fail()) {
+    std::cin.clear();
+    std::cin.ignore(1000, '\n');
+    std::cout << "Try  again: ";
+    std::cin >> input;
+    input = ignore_symbol(input, delimiter);
+  }
+  std::cout << "You have entered: " << input << std::endl;
+  return input;
+}
+
+void option(int id, std::vector<Project> &projects)
+{
+  switch(id)
   {
-    case 1:
+    case 1: {
       std::cout << "create project\n";
+      std::string project_name = input();
+      create_project(projects, project_name);
+      }
       break;
-    case 2:
+    case 2: {
       std::cout << "add task\n";
+      if(projects.empty()) {
+        std::cout << "Fail: There in no project. You should create a project at first.\n";
+      } else {
+        std::cout << "Below see the projects...\n";
+        display_projects(projects);
+        std::cout << "\nEnter the project name to add a task. ";
+        std::string project_name = input();
+        std::cout << "You have entered - " << project_name << std::endl;
+        if(is_repeated_project_name(projects, project_name)) {
+           std::cout << "Good! Now please enter task name to be added. ";
+           std::string task_name = input();
+           std::cout << "Good! Now please enter task date. ";
+           std::string task_date = input();
+           std::cout << "Good! Now please enter user name. ";
+           std::string task_user = input();
+           add_task_to_project(projects, project_name, task_name, task_date, task_user);
+        } else {
+          std::cout << "Fail: The entered project name doesn't exist.\n";
+        }
+      }
+      }
       break;
     case 3:
       std::cout << "edit project\n";
       break;
     case 4:
-      std::cout << "edit task";
+      std::cout << "edit task\n";
       break;
     case 5:
       std::cout << "delete project\n";
       break;
     case 6:
-      std::cout << "delete task";
+      std::cout << "delete task\n";
       break;
     case 7:
-      std::cout << "display projects";
+      std::cout << "display projects\n";
       break;
     case 8:
-      std::cout << "display all data";
+      std::cout << "display all data\n";
       break;
     //default:
     //  std::cout << "????????";
   }
+  update_db(projects, db_name);
 }
 
 int run()
 {
   std::vector<Project> projects = {};
-  std::string db_name = "db.txt";
   read_from_db(projects, db_name);
   std::vector<std::string> menu = {"To create new project\n"
                                  , "To add task\n"
@@ -329,13 +377,10 @@ int run()
   display_menu(menu);
   int id = make_choice(menu);
 
-  option(id);
+  option(id, projects);
 
-  std::string project_name = "name1";
-  //create project
-  create_project(projects, project_name);
 
-  std::string task_name = "task1";
+/*  std::string task_name = "task1";
   std::string task_date = "10.09.23";
   std::string task_user = "user3";
   add_task_to_project(projects, project_name
@@ -384,6 +429,7 @@ int run()
   delete_task_from_project(projects, project_new_name, "edited_task22");
   update_db(projects, db_name);
   show_all(projects);
+*/
 }
 
 int main()
