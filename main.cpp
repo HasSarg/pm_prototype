@@ -4,6 +4,14 @@
 #include<fstream>
 #include<sstream>
 
+std::vector<std::string> menu = {"To create new project\n"
+                               , "To add task\n"
+                               , "To edit/rename project\n"
+                               , "To edit task\n"
+                               , "To delete project\n"
+                               , "To delete task\n"
+                               , "To display projects\n"
+                               , "To display all data\n"};
 const char delimiter = '|';
 const char space= ' ';
 const  std::string db_name = "db.txt";
@@ -58,7 +66,7 @@ void create_project(std::vector<Project> &projects
             << "> project has already created!\n";
 }
 
-void read_from_db(std::vector<Project> &projects, std::string db_name)
+void read_from_db(std::vector<Project> &projects, const std::string db_name)
 {
   std::string line;
   std::ifstream data(db_name);
@@ -66,14 +74,12 @@ void read_from_db(std::vector<Project> &projects, std::string db_name)
   {
     while(getline(data, line))
     {
-      //std::string project_name = get_project_name_from_db(line);
-      std::vector<std::string> data = split(line, '|');
-      std::string project_name = data[0];
-      //create_project(project_name, projects)
-      Project project(project_name);
       std::string task_name = "";
       std::string task_date = "";
       std::string task_user = "";
+      std::string project_name = get_project_name_from_db(line);
+      std::vector<std::string> data = split(line, '|');
+      Project project(project_name);
 
       for(int j = 1, i = 1; j < data.size(); ++i, ++j)
       {
@@ -151,6 +157,17 @@ void update_db(std::vector<Project> &projects, std::string db_name)
     //file << "\n";
   }
   file.close();
+}
+
+bool is_repeated_task_name(std::vector<Project> &projects
+                         , std::string project_name
+                         , std::string task_name)
+{
+  for(int i = 0; i < projects.size(); ++i)
+  {
+    if(project_name == projects[i].get_name()) {
+    }
+  }
 }
 
 void add_task_to_project(std::vector<Project> &projects
@@ -237,12 +254,12 @@ void show_all(std::vector<Project> &projects)
 {
   for(int i = 0; i < projects.size(); ++i)
   {
-    std::cout << projects[i].get_name() << std::endl;
+    std::cout << "Project: " << projects[i].get_name() << std::endl;
     for(int j = 0; j < projects[i].tasks.size(); ++j)
     {
-      std::cout << projects[i].tasks[j].get_name() << std::endl;
-      std::cout << projects[i].tasks[j].get_date() << std::endl;
-      std::cout << projects[i].tasks[j].get_user() << std::endl;
+      std::cout << "Task name: " << projects[i].tasks[j].get_name() << std::endl;
+      std::cout << "Task date: " << projects[i].tasks[j].get_date() << std::endl;
+      std::cout << "Task user: " << projects[i].tasks[j].get_user() << std::endl;
     }
   }
 }
@@ -272,9 +289,10 @@ int make_choice(std::vector<std::string> &menu)
   int id = 1;
   std::cout << "Please enter the ID of the selected operation [1, 8]: ";
   std::cin >> id;
+  std::cout << std::endl;
 
-  while(std::cin.fail()) {
-    std::cout << "Fail: Please enter an integer in [1-7] range: ";
+  while(std::cin.fail() || id < 1 || id > 8) {
+    std::cout << "Fail: Please enter an integer in [1-8] range: ";
     std::cin.clear();
     std::cin.ignore();
     std::cin >> id;
@@ -309,13 +327,13 @@ void option(int id, std::vector<Project> &projects)
   switch(id)
   {
     case 1: {
-      std::cout << "create project\n";
+      std::cout << "PROJECT CREATION\n";
       std::string project_name = input();
       create_project(projects, project_name);
       }
       break;
     case 2: {
-      std::cout << "add task\n";
+      std::cout << "TASK ADDITION\n";
       if(projects.empty()) {
         std::cout << "Fail: There in no project. You should create a project at first.\n";
       } else {
@@ -323,10 +341,15 @@ void option(int id, std::vector<Project> &projects)
         display_projects(projects);
         std::cout << "\nEnter the project name to add a task. ";
         std::string project_name = input();
-        std::cout << "You have entered - " << project_name << std::endl;
+        //std::cout << "You have entered - " << project_name << std::endl;
         if(is_repeated_project_name(projects, project_name)) {
            std::cout << "Good! Now please enter task name to be added. ";
            std::string task_name = input();
+           if(is_repeated_task_name(projects, project_name, task_name)) {
+             std::cout << "Fail: The entered task new name has already added to <"
+                       << project_name << "> project.\n";
+             return;
+           }
            std::cout << "Good! Now please enter task date. ";
            std::string task_date = input();
            std::cout << "Good! Now please enter user name. ";
@@ -338,23 +361,142 @@ void option(int id, std::vector<Project> &projects)
       }
       }
       break;
-    case 3:
-      std::cout << "edit project\n";
+    case 3: {
+        std::cout << "PROJECT EDIT/RENAME\n";
+        if(!projects.empty()) {
+          std::cout << "Below see projects' list: \n";
+          display_projects(projects);
+          std::cout << "Please enter the project name, you need to edit/rename.";
+          std::string project_name = input();
+          if(is_repeated_project_name(projects, project_name)) {
+            std::cout << "Good! Now please enter project new name: ";
+            std::string project_new_name = input();
+            if(!is_repeated_project_name(projects, project_new_name)) {
+              edit_project(projects, project_name, project_new_name);
+              std::cout << "Good! You have successfully changed <"
+                        << project_name << "> project to <"
+                        << project_new_name << "> project.\n";
+            }
+          } else {
+            std::cout << "Fail: The entered project_name not found.\n";
+          }
+         } else {
+           std::cout << "Fail: There aren't any projects.\n";
+         }
+      }
       break;
-    case 4:
-      std::cout << "edit task\n";
+    case 4: {
+        std::cout << "TASK UPDATE\n";
+        if(projects.empty()) {
+          std::cout << "Fail: There is no project. You should create a project at first.\n";
+        } else {
+          std::cout << "Please enter project name.\n";
+          std::cout << "Below see the projects.\n";
+          display_projects(projects);
+          std::string project_name = input();
+          if(is_repeated_project_name(projects, project_name)) {
+            for(int i = 0; i < projects.size(); ++i)
+            {
+              if(project_name == projects[i].get_name()) {
+                if(projects[i].tasks.size() > 0) {
+                  std::cout << "Below see the tasks of the selected project:\n";
+                  for(int j = 0; j < projects[i].tasks.size(); ++j)
+                  {
+                    std::cout << projects[i].tasks[j].get_name() << std::endl;
+                  }
+                  std::cout << "Please enter task name: ";
+                  std::string task_name = input();
+                  std::cout << "You have entered: " << input << std::endl;
+                  for(int k = 0; k < projects[i].tasks.size(); ++k)
+                  {
+                    if(task_name == projects[i].tasks[k].get_name()) {
+                      std::cout << "Please enter new task name: ";
+                      std::string task_new_name = input();
+                      std::cout << "Please enter new task date: ";
+                      std::string task_new_date = input();
+                      std::cout << "Please enter new task user: ";
+                      std::string task_new_user = input();
+                      edit_task_in_projects(projects, project_name, task_name
+                                          , task_new_name, task_new_date, task_new_user);
+                      return;
+                    }
+                  }
+                }
+
+              }
+            }
+        }
+        std::cout << "Fail: You have entered <" << project_name
+                  << "> project name, that doesn't exist.\n";
+      }
+      }
       break;
-    case 5:
-      std::cout << "delete project\n";
+    case 5: {
+        std::cout << "PROJECT DELETION\n";
+        if(projects.empty()) {
+          std::cout << "Fail: There is no project.\n";
+        } else {
+          std::cout << "Below see projects.\n";
+          display_projects(projects);
+          std::cout << "To delete a project, you should enter a project name: ";
+          std::string project_name = input();
+          if(is_repeated_project_name(projects, project_name)) {
+            delete_project(projects, project_name);
+            std::cout << "Done: <" << project_name << "> project has successfully deleted.\n";
+          }
+        }
+      }
       break;
-    case 6:
-      std::cout << "delete task\n";
+    case 6: {
+        std::cout << "TASK DELETION\n";
+        if(projects.empty()) {
+          std::cout << "Fail: There aren't any projects.\n";
+        }else {
+          std::cout << "Below see all projects: \n";
+          display_projects(projects);
+          std::cout << "Please enter the project name, which task you want to delete: ";
+          std::string project_name = input();
+          if(is_repeated_project_name(projects, project_name)) {
+            std::cout << "Below see the mentioned project's task(s): \n";
+            for(int i = 0; i < projects.size(); ++i) {
+              if(project_name == projects[i].get_name()) {
+                for(int j = 0; j < projects[i].tasks.size(); ++j)
+                {
+                  std::cout << projects[i].tasks[j].get_name() << std::endl;
+                }
+                std::cout << "Please enter task name: ";
+                std::string task_name = input();
+                for(int j = 0; j < projects[i].tasks.size(); ++j)
+                {
+                  if(task_name == projects[i].tasks[j].get_name()) {
+                    projects[i].tasks.erase(projects[i].tasks.begin() + j);
+                    std::cout << "Done: <" << task_name << "> task name of <"
+                              << project_name << "> project has been deleted.\n";
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
       break;
-    case 7:
-      std::cout << "display projects\n";
+    case 7: {
+        std::cout << "DISPLAY PROJECTS\n";
+        if(projects.empty()) {
+          std::cout << "Fail: There aren't any projects.\n";
+        } else {
+          display_projects(projects);
+        }
+      }
       break;
-    case 8:
-      std::cout << "display all data\n";
+    case 8: {
+        std::cout << "DISPLAY ALL DATA (Project(s) with task(s))\n";
+        if(projects.empty()) {
+          std::cout << "Fail: There aren't any projects.\n";
+        } else {
+          show_all(projects);
+        }
+      }
       break;
     //default:
     //  std::cout << "????????";
@@ -362,74 +504,13 @@ void option(int id, std::vector<Project> &projects)
   update_db(projects, db_name);
 }
 
-int run()
+void run()
 {
   std::vector<Project> projects = {};
   read_from_db(projects, db_name);
-  std::vector<std::string> menu = {"To create new project\n"
-                                 , "To add task\n"
-                                 , "To edit/rename project\n"
-                                 , "To edit task\n"
-                                 , "To delete project\n"
-                                 , "To delete task\n"
-                                 , "To display projects\n"
-                                 , "To display all data\n"};
   display_menu(menu);
   int id = make_choice(menu);
-
   option(id, projects);
-
-
-/*  std::string task_name = "task1";
-  std::string task_date = "10.09.23";
-  std::string task_user = "user3";
-  add_task_to_project(projects, project_name
-                    , task_name, task_date, task_user);
-  //create 2nd project
-  project_name = "name2";
-  create_project(projects, project_name);
-  task_name = "task22";
-  task_date = "12.02.23";
-  task_user = "user3";
-  add_task_to_project(projects, project_name
-                    , task_name, task_date, task_user);
-  //edit task in project2
-  task_name = "task22";
-  std::string task_new_name = "task24";
-  std::string task_new_date = "12.03.23";
-  std::string task_new_user = "user2";
-  edit_task_in_projects(projects, project_name
-                      , task_name, task_new_name
-                      , task_new_date, task_new_user);
-
-  //create 3rd project
-  project_name = "name3";
-  create_project(projects, project_name);
-  task_name = "task32";
-  task_date = "10.02.2023";
-  task_user = "user2";
-
-  add_task_to_project(projects, project_name
-                    , task_name, task_date, task_user);
-  task_new_name = "edited_task32";
-  task_new_date = "11.08.22";
-  task_new_user = "Hasmik";
-  edit_task_in_projects(projects, project_name
-                      , task_name, task_new_name
-                      , task_new_date, task_new_user);
-  //delete project
-  project_name = "name1";
-  delete_project(projects, project_name);
-
-  //edit project
-  project_name = "name2";
-  std::string project_new_name = "edited_name2";
-  edit_project(projects, project_name, project_new_name);
-  //delete task in project edited_name2
-  delete_task_from_project(projects, project_new_name, "edited_task22");
-  update_db(projects, db_name);
-  show_all(projects);
-*/
 }
 
 int main()
