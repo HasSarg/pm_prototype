@@ -4,14 +4,15 @@
 #include<fstream>
 #include<sstream>
 
-std::vector<std::string> menu = {"To create new project - A\n"
-                               , "To add task - B\n"
-                               , "To edit/rename project - C\n"
-                               , "To edit task - D\n"
-                               , "To delete project - E\n"
-                               , "To delete task - F\n"
-                               , "To display projects - G\n"
-                               , "To display all data - H\n"};
+std::vector<std::string> menu = {"To create new project - C\n"
+                               , "To add task - A\n"
+                               , "To update/rename project - U\n"
+                               , "To edit task - E\n"
+                               , "To delete project - D\n"
+                               , "To remove task - R\n"
+                               , "To view projects - V\n"
+                               , "To show all data - S\n"
+                               , "To exit - X\n"};
 const char delimiter = '|';
 const char space= ' ';
 const  std::string db_name = "db.txt";
@@ -49,6 +50,7 @@ void read_from_db(std::vector<Project> &projects, const std::string db_name)
     while(getline(data, line))
     {
       std::string task_name = "";
+      std::string task_status = "";
       std::string task_date = "";
       std::string task_user = "";
       std::string project_name = get_project_name_from_db(line);
@@ -61,12 +63,15 @@ void read_from_db(std::vector<Project> &projects, const std::string db_name)
            task_name = data[j];
          }
          if(i == 2) {
-           task_date = data[j];
+           task_status = data[j];
          }
          if(i == 3) {
+           task_date = data[j];
+         }
+         if(i == 4) {
            task_user = data[j];
            i = 0;
-           project.add_task(task_name, task_date, task_user);
+           project.add_task(task_name, task_status, task_date, task_user);
          }
       }
       projects.push_back(project);
@@ -88,13 +93,11 @@ char make_input()
 {
   char input;
   do {
-    std::cout << "Please enter the capital letter of the appropriate option (A, B...H).\n";
-    std::cout << "In case of entered string the first letter/sign will be accepted as your choice: ";
+    std::cout << "Please enter the capital letter of the appropriate option (C, A, ...X).\n";
+    std::cout << "Only the first letter/sign of the input will be accepted as your choice: ";
     std::cin >> input;
   } while(std::cin.fail());
-  //std::cin.clear();
-  //std::cin.ignore(256, '\n');
-  std::cout << input << std::endl;
+  std::cout << "You have entered - " << input << std::endl;
   return input;
 }
 
@@ -112,7 +115,7 @@ bool is_found_project_name(std::vector<Project> &projects
 
 void display_projects(std::vector<Project> &projects)
 {
-  std::cout << "Below see the projects...\n";
+  std::cout << "Below see the projects...\n\n";
   for(int i = 0; i < projects.size(); ++i)
   {
     std::cout << projects[i].get_name() << std::endl;
@@ -122,16 +125,10 @@ void display_projects(std::vector<Project> &projects)
 void create_project(std::vector<Project> &projects
                   , std::string project_name)
 {
-  if(!is_found_project_name(projects, project_name)) {
-    Project project(project_name);
-    projects.push_back(project);
-    display_projects(projects);
-    std::cout << "Done: <" << project_name
-              << "> project has successfully created!\n";
-    return;
-  }
-  std::cerr << "Error: <" << project_name
-            << "> project has already created!\n";
+  Project project(project_name);
+  projects.push_back(project);
+  std::cout << "Done: <" << project_name
+            << "> project has successfully created!\n";
 }
 
 std::string ignore_symbol(std::string str, char symbol)
@@ -149,20 +146,11 @@ std::string ignore_symbol(std::string str, char symbol)
 std::string data_input()
 {
   std::string input = "";
-  std::cout << "Please enter name ('|' and spaces will be ignored): ";
+  std::cout << "Please enter ('|' and spaces will be ignored): ";
   std::cin.clear();
-  std::cin.ignore(256, '\n');
-  //std::cin >> input;
-  std::getline(std::cin, input);
+  std::cin.ignore(0, '\n');
+  std::cin >> input;
   input = ignore_symbol(ignore_symbol(input, delimiter), space);
-  std::cout << "name: " << input << std::endl;
-  //while(std::cin.fail()) {
-  //  std::cin.clear();
-  //  std::cin.ignore(256, '\n');
-  //  std::cout << "Try  again: ";
-  //  std::cin >> input;
-  //  input = ignore_symbol(ignore_symbol(input, delimiter), space);
-  //}
   std::cout << "You have entered: " << input << std::endl;
   return input;
 }
@@ -170,7 +158,7 @@ std::string data_input()
 void update_db(std::vector<Project> &projects, std::string db_name)
 {
   std::ofstream file;
-  file.open(db_name, std::ios_base::out);//, std::ios::in);
+  file.open(db_name, std::ios_base::out);
   if(file.is_open())
   {
     for(int i = 0; i < projects.size(); ++i) {
@@ -197,10 +185,15 @@ void update_db(std::vector<Project> &projects, std::string db_name)
 
 void project_creation(std::vector<Project> &projects)
 {
-  std::cout << "PROJECT CREATION\n";
+  std::cout << "    PROJECT CREATION\n";
+  std::cout << "You should enter a name of the project. ";
   std::string project_name = data_input();
-  //std::cout << "Project creation: " << std::endl;
-  std::cout << "project_name: " << project_name << std::endl;
+  if(is_found_project_name(projects, project_name))
+  {
+    std::cerr << "Error: The entered <" << project_name
+              << "> has already created.\n";
+    return;
+  }
   create_project(projects, project_name);
   update_db(projects, db_name);
 }
@@ -226,6 +219,7 @@ bool is_found_task_name(std::vector<Project> &projects
 void add_task_to_project(std::vector<Project> &projects
                        , std::string project_name
                        , std::string task_name
+                       , std::string task_status
                        , std::string task_date
                        , std::string task_user)
 {
@@ -241,7 +235,7 @@ void add_task_to_project(std::vector<Project> &projects
           return;
         }
       }
-      Task task(task_name, task_date, task_user);
+      Task task(task_name, task_status, task_date, task_user);
       std::cout << "Done: <" << task_name << "> task is added to <"
                 << project_name << "> project.\n";
       projects[i].tasks.push_back(task);
@@ -251,11 +245,12 @@ void add_task_to_project(std::vector<Project> &projects
 
 void task_addition(std::vector<Project> &projects)
 {
-  std::cout << "TASK ADDITION\n";
-  if(projects.empty()) {
-    std::cerr << "Error: There in no project. You should create a project at first.\n";
+  if(projects.empty())
+  {
+    std::cerr << "Error: There aren't any projects. You should create a project at first.\n";
     return;
   }
+  std::cout << "    TASK ADDITION\n";
   display_projects(projects);
   std::cout << "\nEnter the project name to add a task. ";
   std::string project_name = data_input();
@@ -265,16 +260,20 @@ void task_addition(std::vector<Project> &projects)
   }
   std::cout << "Good! Now please enter task name to be added. ";
   std::string task_name = data_input();
-  if(is_found_task_name(projects, project_name, task_name)) {
+  if(is_found_task_name(projects, project_name, task_name))
+  {
     std::cerr << "Error: The entered <" << task_name << "> task has already added to <"
               << project_name << "> project.\n";
     return;
   }
+  std::cout << "Good! Now please enter task status. ";
+  std::string task_status = data_input();
   std::cout << "Good! Now please enter task date. ";
   std::string task_date = data_input();
   std::cout << "Good! Now please enter user name. ";
   std::string task_user = data_input();
-  add_task_to_project(projects, project_name, task_name, task_date, task_user);
+  add_task_to_project(projects, project_name, task_name, task_status
+                    , task_date, task_user);
   update_db(projects, db_name);
 }
 
@@ -299,12 +298,12 @@ bool edit_project(std::vector<Project> &projects
 
 void project_update(std::vector<Project> &projects)
 {
-  std::cout << "PROJECT UPDATE/RENAME\n";
   if(projects.empty())
   {
-    std::cerr << "Error: There aren't any projects.\n";
+    std::cerr << "Error: There aren't any projects. You should create a project at first.\n";
     return;
   }
+  std::cout << "    PROJECT UPDATE/RENAME\n";
   display_projects(projects);
   std::cout << "Please enter the project name, you need to edit/rename.";
   std::string project_name = data_input();
@@ -355,7 +354,7 @@ void edit_task_in_projects(std::vector<Project> &projects
           projects[i].tasks[j].set_date(task_new_date);
           projects[i].tasks[j].set_user(task_new_user);
           std::cout << "Done: <" << task_name
-                    << "> of <" << project_name
+                    << "> task of <" << project_name
                     << "> project is edited successfully!\n";
           return;
         }
@@ -365,17 +364,46 @@ void edit_task_in_projects(std::vector<Project> &projects
   std::cerr << "Error: <" << task_name << "> wasn't edited!\n";
 }
 
-void task_update(std::vector<Project> &projects)
+bool project_has_task(std::vector<Project> &projects, std::string project_name)
 {
-  std::cout << "TASK UPDATE\n";
+  for(int i = 0; i < projects.size(); ++i)
+  {
+    if(project_name == projects[i].get_name())
+    {
+      if(projects[i].tasks.empty())
+      {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+void display_projects_tasks(std::vector<Project> &projects)
+{
+  std::cout << "Below see all data...\n\n";
+  for(int i = 0; i < projects.size(); ++i)
+  {
+    std::cout << "Project: " << projects[i].get_name() << std::endl;
+    for(int j = 0; j < projects[i].tasks.size(); ++j)
+    {
+      std::cout << "Task name: " << projects[i].tasks[j].get_name() << std::endl;
+      std::cout << "Task date: " << projects[i].tasks[j].get_date() << std::endl;
+      std::cout << "Task user: " << projects[i].tasks[j].get_user() << std::endl;
+    }
+  }
+}
+
+void task_edit(std::vector<Project> &projects)
+{
   if(projects.empty())
   {
-    std::cerr << "Error: There is no project. You should create a project at first.\n";
+    std::cerr << "Error: There aren't any projects. You should create a project at first.\n";
     return;
   }
-  std::cout << "Please enter project name, which task you need to edit.\n";
-  std::cout << "Below see the projects.\n";
-  display_projects(projects);
+  std::cout << "    TASK UPDATE\n";
+  std::cout << "Please enter project name, to edit task of it.\n";
+  display_projects_tasks(projects);
   std::string project_name = data_input();
   if(!is_found_project_name(projects, project_name))
   {
@@ -383,45 +411,37 @@ void task_update(std::vector<Project> &projects)
               << "> project name, that doesn't exist.\n";
     return;
   }
-  for(int i = 0; i < projects.size(); ++i)
+  if(!project_has_task(projects, project_name))
   {
-    if(project_name == projects[i].get_name())
-    {
-      if(0 == projects[i].tasks.size())
-      {
-        std::cerr << "Error: the selected <" << project_name
-                  << "> project has no task.\n";
-        return;
-      }
-      std::cout << "Below see the tasks of the selected project:\n";
-      projects[i].get_task_data();
-      std::cout << "Please enter task name: ";
-      std::string task_name = data_input();
-      std::cout << "You have selected: " << task_name << std::endl;
-      for(int k = 0; k < projects[i].tasks.size(); ++k)
-      {
-        if(task_name == projects[i].tasks[k].get_name())
-        {
-          std::cout << "Please enter new task name: ";
-          std::string task_new_name = data_input();
-          if(is_found_task_name(projects, projects[i].get_name(), task_new_name))
-          {
-            std::cerr << "Error: The entered <" << task_new_name
-                      << "> new task name has already existed in <"
-                      << projects[i].get_name() << "> project.\n";
-            return;
-          }
-          std::cout << "Please enter new task date: ";
-          std::string task_new_date = data_input();
-          std::cout << "Please enter new task user: ";
-          std::string task_new_user = data_input();
-          edit_task_in_projects(projects, project_name, task_name
-                              , task_new_name, task_new_date, task_new_user);
-          return;
-         }
-      }
-    }
+    std::cerr << "Error: The entered <" << project_name
+              << "> hasn't got any tasks.\n";
+    return;
   }
+  std::cout << "Please enter task name to update. ";
+  std::string task_name = data_input();
+  if(!is_found_task_name(projects, project_name, task_name))
+  {
+    std::cerr << "Error: The entered <" << task_name
+              << "> doesn't exist in <" << project_name
+              << "> project.\n";
+    return;
+  }
+  std::cout << "Please enter new task name: ";
+  std::string task_new_name = data_input();
+  if(is_found_task_name(projects, project_name, task_new_name))
+  {
+    std::cerr << "Error: The entered <" << task_new_name
+              << "> has already existed in <" << project_name
+              << "> project.\n";
+    return;
+  }
+  std::cout << "Please enter new task date: ";
+  std::string task_new_date = data_input();
+  std::cout << "Please enter new task user: ";
+  std::string task_new_user = data_input();
+  edit_task_in_projects(projects, project_name, task_name
+                      , task_new_name, task_new_date, task_new_user);
+  update_db(projects, db_name);
 }
 
 void delete_project(std::vector<Project> &projects, std::string &name)
@@ -440,12 +460,12 @@ void delete_project(std::vector<Project> &projects, std::string &name)
 
 void project_deletion(std::vector<Project> &projects)
 {
-  std::cout << "PROJECT DELETION\n";
   if(projects.empty())
   {
-    std::cerr << "Error: There is no project.\n";
+    std::cerr << "Error: There aren't any projects. You should create a project at first.\n";
     return;
   }
+  std::cout << "    PROJECT DELETION\n";
   display_projects(projects);
   std::cout << "To delete a project, you should enter a project name: ";
   std::string project_name = data_input();
@@ -459,80 +479,77 @@ void project_deletion(std::vector<Project> &projects)
   update_db(projects, db_name);
 }
 
-void task_deletion(std::vector<Project> &projects)
+void task_remove(std::vector<Project> &projects)
 {
-  std::cout << "TASK DELETION\n";
   if(projects.empty())
   {
-    std::cerr << "Error: There aren't any projects.\n";
+    std::cerr << "Error: There aren't any projects. You should create a project at first.\n";
     return;
   }
-  display_projects(projects);
-  std::cout << "Please enter the project name, which task you want to delete: ";
+  std::cout << "    TASK DELETION\n";
+  display_projects_tasks(projects);
+  std::cout << "Please enter the project name, if you want to delete its task: ";
   std::string project_name = data_input();
   if(!is_found_project_name(projects, project_name))
   {
     std::cerr << "Error: The entered <" << project_name << "> not found.\n";
     return;
   }
+
   std::cout << "Below see the mentioned project's task(s): \n";
   for(int i = 0; i < projects.size(); ++i)
   {
     if(project_name == projects[i].get_name())
     {
+      if(0 == projects[i].tasks.size()) {
+        std::cerr << "Error: There aren't any tasks in <" << project_name
+                  << "> project.\n";
+        return;
+      }
       for(int j = 0; j < projects[i].tasks.size(); ++j)
       {
         std::cout << projects[i].tasks[j].get_name() << std::endl;
       }
-      std::cout << "Please enter task name: ";
+      std::cout << "Please enter task name. ";
       std::string task_name = data_input();
-      for(int j = 0; j < projects[i].tasks.size(); ++j)
+      bool deleted = false;
+      for(int h = 0; h < projects[i].tasks.size(); ++h)
       {
-        if(task_name == projects[i].tasks[j].get_name())
+        if(task_name == projects[i].tasks[h].get_name())
         {
-          projects[i].tasks.erase(projects[i].tasks.begin() + j);
-          std::cout << "Done: <" << task_name << "> task name of <"
+          projects[i].tasks.erase(projects[i].tasks.begin() + h);
+          std::cout << "Done: <" << task_name << "> task <"
                     << project_name << "> project has been deleted.\n";
+          deleted = true;
         }
       }
+      if(!deleted) std::cerr << "Error: The entered <" << task_name
+                             << "> not found.\n";
     }
   }
+  update_db(projects, db_name);
+}
+
+void view_projects(std::vector<Project> &projects)
+{
+  if(projects.empty())
+  {
+    std::cerr << "Error: There aren't any projects. You should create a project at first.\n";
+    return;
+  }
+  std::cout << "    DISPLAY PROJECTS\n";
+  display_projects(projects);
 }
 
 void show_all(std::vector<Project> &projects)
 {
-  for(int i = 0; i < projects.size(); ++i)
-  {
-    std::cout << "Project: " << projects[i].get_name() << std::endl;
-    for(int j = 0; j < projects[i].tasks.size(); ++j)
-    {
-      std::cout << "Task name: " << projects[i].tasks[j].get_name() << std::endl;
-      std::cout << "Task date: " << projects[i].tasks[j].get_date() << std::endl;
-      std::cout << "Task user: " << projects[i].tasks[j].get_user() << std::endl;
-    }
-  }
-}
-
-void projects_show(std::vector<Project> &projects)
-{
-  std::cout << "DISPLAY PROJECTS\n";
   if(projects.empty())
   {
-    std::cerr << "Error: There aren't any projects.\n";
+    std::cerr << "Error: There aren't any projects. You should create a project at first.\n";
     return;
   }
-  display_projects(projects);
-}
-
-void display_all(std::vector<Project> &projects)
-{
-  std::cout << "DISPLAY ALL DATA (Project(s) with task(s))\n";
-  if(projects.empty())
-  {
-    std::cerr << "Error: There aren't any projects.\n";
-    return;
-  }
-  show_all(projects);
+  std::cout << "    DISPLAY ALL DATA (Project(s)&task(s))\n";
+  display_projects_tasks(projects);
 }
 
 void delete_task_from_project(std::vector<Project> &projects
@@ -553,49 +570,59 @@ void delete_task_from_project(std::vector<Project> &projects
   }
 }
 
-void make_choice(const char input, std::vector<Project> &projects)
+void make_choice(char input, std::vector<Project> &projects)
 {
   switch(input)
   {
-    case 'A':
+    case 'C':
       project_creation(projects);
       break;
-    case 'B':
+    case 'A':
       task_addition(projects);
       break;
-    case 'C':
+    case 'U':
       project_update(projects);
       break;
-    case 'D':
-      task_update(projects);
-      break;
     case 'E':
+      task_edit(projects);
+      break;
+    case 'D':
       project_deletion(projects);
       break;
-    case 'F':
-      task_deletion(projects);
+    case 'R':
+      task_remove(projects);
       break;
-    case 'G':
-      projects_show(projects);
+    case 'V':
+      view_projects(projects);
       break;
-    case 'H':
-      display_all(projects);
+    case 'S':
+      show_all(projects);
+      break;
+    case 'X':
+      return;
       break;
     default:
-      std::cout << "Default.\n";
+      std::cout << "The option for the entered letter doesn't exist.\n";
   }
-  //update_db(projects, db_name);
+  std::cout << "******************************\n";
+  std::cout << "To exit, please enter any 'X', or please enter the other symbol to continue: ";
+  std::cin >> input;
+  if(input != 'X')
+  {
+    display_menu();
+    input = make_input();
+    make_choice(input, projects);
+  }
 }
 
 void run()
 {
   std::vector<Project> projects = {};
-  display_projects(projects);
   read_from_db(projects, db_name);
-  display_projects(projects);
   display_menu();
   char input = make_input();
   make_choice(input, projects);
+  std::cout << "The application has been closed.\n";
 }
 
 int main()
