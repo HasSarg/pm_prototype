@@ -43,7 +43,6 @@ void Project::add_task(std::string name, std::string date, std::string user)
 
 void Project::display_tasks() const
 {
-  std::cout << "Task size:" << tasks.size() << std::endl;
   for(int i = 0; i < tasks.size(); ++i)
   {
     std::cout << "Task: " << i << " ";
