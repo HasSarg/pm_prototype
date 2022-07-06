@@ -14,16 +14,21 @@ _Project Maintainer:_ HS <br>
 _email:_ <hasmik.sargsyan.gary@gmail.com>
 
 ### 2. INTRODUCTION
-_"pm_prototype"_ is an experiment via C++. It provides projects and tasks creation option. There are read, update & delete  as well.
+_"pm_prototype"_ is an experiment via C++. It provides projects and tasks creation option. There are read, update & delete options as well.
 
 ### 3. Structure
 | Files      |  Description                   |
 |            |                                |
 | main.cpp   |the main source of the project  |
+|            |                                |
 | project.hpp|the header file of project class|
+|            |                                |
 | project.cpp|the source file of project class|
+|            |                                |
 | task.hpp   |the header file of task class   |
+|            |                                |
 | task.cpp   |the source file of task class   |
+|            |                                |
 | Makefile   |in progress                     |
 
 ### 4. USAGE
