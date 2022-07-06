@@ -18,7 +18,7 @@ _"pm_prototype"_ is an experiment via C++. It provides projects and tasks creati
 
 ### 3. Structure
 | Files      |  Description                   |
-|            |                                |
+|------------|--------------------------------|
 | main.cpp   |the main source of the project  |
 |            |                                |
 | project.hpp|the header file of project class|
