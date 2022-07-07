@@ -34,4 +34,5 @@ _"pm_prototype"_ is an experiment via C++. It provides projects and tasks creati
 ### 4. USAGE
 > Commands: <br>
 >> make (pm executable file has been created) <br>
+>> make run (pm file execution) <br>
 >> make clean (pm & db.txt have been deleted)
