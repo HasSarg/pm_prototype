@@ -29,8 +29,9 @@ _"pm_prototype"_ is an experiment via C++. It provides projects and tasks creati
 |            |                                |
 | task.cpp   |the source file of task class   |
 |            |                                |
-| Makefile   |in progress                     |
+| Makefile   |make & clean commands           |
 
 ### 4. USAGE
 > Commands: <br>
->> g++ main.cpp project.cpp task.cpp
+>> make (pm executable file has been created)
+>> make clean (pm & db.txt have been deleted)
