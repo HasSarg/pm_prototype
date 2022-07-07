@@ -97,7 +97,9 @@ char make_input()
     std::cout << "Only the first letter/sign of the input will be accepted as your choice: ";
     std::cin >> input;
   } while(std::cin.fail());
-  std::cout << "You have entered - " << input << std::endl;
+  std::cout << "You have entered " << input;
+  std::cin.clear();
+  std::cin.ignore(256, '\n');
   return input;
 }
 
@@ -143,13 +145,11 @@ std::string ignore_symbol(std::string str, char symbol)
   return result;
 }
 
-std::string data_input()
+std::string data_input(std::string str)
 {
   std::string input = "";
-  std::cout << "Please enter ('|' and spaces will be ignored): ";
-  std::cin.clear();
-  std::cin.ignore(0, '\n');
-  std::cin >> input;
+  std::cout << "Please enter " << str << " ('|' and spaces will be ignored): ";
+  getline(std::cin, input);
   input = ignore_symbol(ignore_symbol(input, delimiter), space);
   std::cout << "You have entered: " << input << std::endl;
   return input;
@@ -185,9 +185,9 @@ void update_db(std::vector<Project> &projects, std::string db_name)
 
 void project_creation(std::vector<Project> &projects)
 {
-  std::cout << "    PROJECT CREATION\n";
+  std::cout << " - PROJECT CREATION\n";
   std::cout << "You should enter a name of the project. ";
-  std::string project_name = data_input();
+  std::string project_name = data_input("project name");
   if(is_found_project_name(projects, project_name))
   {
     std::cerr << "Error: The entered <" << project_name
@@ -250,16 +250,16 @@ void task_addition(std::vector<Project> &projects)
     std::cerr << "Error: There aren't any projects. You should create a project at first.\n";
     return;
   }
-  std::cout << "    TASK ADDITION\n";
+  std::cout << " - TASK ADDITION\n";
   display_projects(projects);
-  std::cout << "\nEnter the project name to add a task. ";
-  std::string project_name = data_input();
+  std::cout << "\nEnter the project name from the list to add a task. ";
+  std::string project_name = data_input("project name");
   if(!is_found_project_name(projects, project_name)) {
     std::cerr << "Error: The entered project name doesn't exist.\n";
     return;
   }
   std::cout << "Good! Now please enter task name to be added. ";
-  std::string task_name = data_input();
+  std::string task_name = data_input("task name");
   if(is_found_task_name(projects, project_name, task_name))
   {
     std::cerr << "Error: The entered <" << task_name << "> task has already added to <"
@@ -267,11 +267,11 @@ void task_addition(std::vector<Project> &projects)
     return;
   }
   std::cout << "Good! Now please enter task status. ";
-  std::string task_status = data_input();
+  std::string task_status = data_input("task status");
   std::cout << "Good! Now please enter task date. ";
-  std::string task_date = data_input();
+  std::string task_date = data_input("task date");
   std::cout << "Good! Now please enter user name. ";
-  std::string task_user = data_input();
+  std::string task_user = data_input("user name");
   add_task_to_project(projects, project_name, task_name, task_status
                     , task_date, task_user);
   update_db(projects, db_name);
@@ -303,18 +303,18 @@ void project_update(std::vector<Project> &projects)
     std::cerr << "Error: There aren't any projects. You should create a project at first.\n";
     return;
   }
-  std::cout << "    PROJECT UPDATE/RENAME\n";
+  std::cout << " - PROJECT UPDATE/RENAME\n";
   display_projects(projects);
   std::cout << "Please enter the project name, you need to edit/rename.";
-  std::string project_name = data_input();
+  std::string project_name = data_input("project name from the list, ");
   if(!is_found_project_name(projects, project_name))
   {
     std::cerr << "Error: The entered <" << project_name
               << "> project name not found.\n";
     return;
   }
-  std::cout << "Good! Now please enter project new name: ";
-  std::string project_new_name = data_input();
+  std::cout << "Good! Now please enter new project name: ";
+  std::string project_new_name = data_input("new project name");
   if(is_found_project_name(projects, project_new_name))
   {
     std::cerr << "Error: The entered <" << project_new_name
@@ -401,10 +401,10 @@ void task_edit(std::vector<Project> &projects)
     std::cerr << "Error: There aren't any projects. You should create a project at first.\n";
     return;
   }
-  std::cout << "    TASK UPDATE\n";
+  std::cout << " - TASK UPDATE\n";
   std::cout << "Please enter project name, to edit task of it.\n";
   display_projects_tasks(projects);
-  std::string project_name = data_input();
+  std::string project_name = data_input("project name");
   if(!is_found_project_name(projects, project_name))
   {
     std::cerr << "Error: You have entered <" << project_name
@@ -418,7 +418,7 @@ void task_edit(std::vector<Project> &projects)
     return;
   }
   std::cout << "Please enter task name to update. ";
-  std::string task_name = data_input();
+  std::string task_name = data_input("task name");
   if(!is_found_task_name(projects, project_name, task_name))
   {
     std::cerr << "Error: The entered <" << task_name
@@ -427,7 +427,7 @@ void task_edit(std::vector<Project> &projects)
     return;
   }
   std::cout << "Please enter new task name: ";
-  std::string task_new_name = data_input();
+  std::string task_new_name = data_input("task name");
   if(is_found_task_name(projects, project_name, task_new_name))
   {
     std::cerr << "Error: The entered <" << task_new_name
@@ -436,9 +436,9 @@ void task_edit(std::vector<Project> &projects)
     return;
   }
   std::cout << "Please enter new task date: ";
-  std::string task_new_date = data_input();
+  std::string task_new_date = data_input("date");
   std::cout << "Please enter new task user: ";
-  std::string task_new_user = data_input();
+  std::string task_new_user = data_input("user name");
   edit_task_in_projects(projects, project_name, task_name
                       , task_new_name, task_new_date, task_new_user);
   update_db(projects, db_name);
@@ -465,10 +465,10 @@ void project_deletion(std::vector<Project> &projects)
     std::cerr << "Error: There aren't any projects. You should create a project at first.\n";
     return;
   }
-  std::cout << "    PROJECT DELETION\n";
+  std::cout << " - PROJECT DELETION\n";
   display_projects(projects);
   std::cout << "To delete a project, you should enter a project name: ";
-  std::string project_name = data_input();
+  std::string project_name = data_input("project name");
   if(!is_found_project_name(projects, project_name))
   {
     std::cerr << "Error: The entered <" << project_name
@@ -486,10 +486,10 @@ void task_remove(std::vector<Project> &projects)
     std::cerr << "Error: There aren't any projects. You should create a project at first.\n";
     return;
   }
-  std::cout << "    TASK DELETION\n";
+  std::cout << " - TASK DELETION\n";
   display_projects_tasks(projects);
   std::cout << "Please enter the project name, if you want to delete its task: ";
-  std::string project_name = data_input();
+  std::string project_name = data_input("project name");
   if(!is_found_project_name(projects, project_name))
   {
     std::cerr << "Error: The entered <" << project_name << "> not found.\n";
@@ -511,7 +511,7 @@ void task_remove(std::vector<Project> &projects)
         std::cout << projects[i].tasks[j].get_name() << std::endl;
       }
       std::cout << "Please enter task name. ";
-      std::string task_name = data_input();
+      std::string task_name = data_input("task name");
       bool deleted = false;
       for(int h = 0; h < projects[i].tasks.size(); ++h)
       {
@@ -534,10 +534,10 @@ void view_projects(std::vector<Project> &projects)
 {
   if(projects.empty())
   {
-    std::cerr << "Error: There aren't any projects. You should create a project at first.\n";
+    std::cerr << " - Error: There aren't any projects. You should create a project at first.\n";
     return;
   }
-  std::cout << "    DISPLAY PROJECTS\n";
+  std::cout << " - DISPLAY PROJECTS\n";
   display_projects(projects);
 }
 
@@ -545,10 +545,10 @@ void show_all(std::vector<Project> &projects)
 {
   if(projects.empty())
   {
-    std::cerr << "Error: There aren't any projects. You should create a project at first.\n";
+    std::cerr << " - Error: There aren't any projects. You should create a project at first.\n";
     return;
   }
-  std::cout << "    DISPLAY ALL DATA (Project(s)&task(s))\n";
+  std::cout << " - DISPLAY ALL DATA (Project(s)&task(s))\n";
   display_projects_tasks(projects);
 }
 
