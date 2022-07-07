@@ -29,7 +29,7 @@ _"pm_prototype"_ is an experiment via C++. It provides projects and tasks creati
 |            |                                |
 | task.cpp   |the source file of task class   |
 |            |                                |
-| Makefile   |make & clean commands           |
+| Makefile   |make, run & clean commands      |
 
 ### 4. USAGE
 > Commands: <br>
